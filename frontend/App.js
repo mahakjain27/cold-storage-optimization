@@ -4,12 +4,10 @@ import Dashboard from "./Dashboard";
 function App() {
   return (
     <div className="App">
+      <h1>Code Cooks: AI Cold Storage</h1>
       <Dashboard />
-
-            <h1>Code Cooks: AI Cold Storage</h1>
-            <Dashboard />
-        </div>
-    );
+    </div>
+  );
 }
 
 export default App;

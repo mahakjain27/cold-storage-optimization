@@ -29,5 +29,21 @@ model.fit(X_train, y_train)
 # Predictions
 y_pred = model.predict(X_test)
 
+# Create a mapping of food_type categories from raw data before conversion
+raw_data = pd.DataFrame(list(sensors_collection.find()))
+raw_food_type_categories = raw_data['food_type'].astype('category').cat.categories.tolist()
+food_type_to_code = {cat: code for code, cat in enumerate(raw_food_type_categories)}
+
+# Function to make predictions
+def predict(input_data):
+    input_df = pd.DataFrame([input_data])
+    # Map food_type to category code safely
+    food_type = input_data.get('food_type')
+    if food_type not in food_type_to_code:
+        raise ValueError(f"Unknown food_type: {food_type}. Valid options: {list(food_type_to_code.keys())}")
+    input_df['food_type'] = input_df['food_type'].map(food_type_to_code)
+    prediction = model.predict(input_df[['temperature', 'humidity', 'food_type']])
+    return prediction[0]
+
 # Evaluation
 print(classification_report(y_test, y_pred))

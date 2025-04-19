@@ -11,6 +11,13 @@ const Dashboard = () => {
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [predictionTemperature, setPredictionTemperature] = useState('');
+    const [predictionHumidity, setPredictionHumidity] = useState('');
+    const [predictionFoodType, setPredictionFoodType] = useState('');
+    const [predictionResult, setPredictionResult] = useState(null);
+    const [predictionLoading, setPredictionLoading] = useState(false);
+    const [predictionError, setPredictionError] = useState(null);
+
     // Function to fetch latest data
     const fetchData = async () => {
         setLoading(true);
@@ -54,6 +61,30 @@ const Dashboard = () => {
         }
     };
 
+    // Function to get prediction
+    const getPrediction = async () => {
+        console.log("Get Prediction button clicked");
+        console.log("Input values:", predictionTemperature, predictionHumidity, predictionFoodType);
+        setPredictionLoading(true);
+        setPredictionError(null);
+        setPredictionResult(null);
+
+        try {
+            const response = await axios.post('/predict', {
+                temperature: Number(predictionTemperature),
+                humidity: Number(predictionHumidity),
+                food_type: predictionFoodType
+            });
+            console.log("Prediction response:", response.data);
+            setPredictionResult(response.data.prediction);
+        } catch (err) {
+            console.error("Prediction error:", err);
+            setPredictionError(err.message);
+        } finally {
+            setPredictionLoading(false);
+        }
+    };
+
     return (
         <div style={{ fontFamily: "Arial, sans-serif", padding: "20px", textAlign: "center" }}>
             <h1>Cold Storage Dashboard</h1>
@@ -66,6 +97,7 @@ const Dashboard = () => {
             <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
                 <input
                     type="number"
+                    name="temperature"
                     placeholder="Temperature (°C)"
                     value={temperature}
                     onChange={(e) => setTemperature(e.target.value)}
@@ -74,6 +106,7 @@ const Dashboard = () => {
                 />
                 <input
                     type="number"
+                    name="humidity"
                     placeholder="Humidity (%)"
                     value={humidity}
                     onChange={(e) => setHumidity(e.target.value)}
@@ -82,6 +115,7 @@ const Dashboard = () => {
                 />
                 <input
                     type="number"
+                    name="spoilage"
                     placeholder="Spoilage Rate"
                     value={spoilage}
                     onChange={(e) => setSpoilage(e.target.value)}
@@ -107,6 +141,44 @@ const Dashboard = () => {
             ) : (
                 <p>No data available</p>
             )}
+
+            {/* Prediction Section */}
+            <div style={{ marginTop: "30px" }}>
+                <h2>Get Prediction</h2>
+                <input
+                    type="number"
+                    name="predictionTemperature"
+                    placeholder="Temperature for prediction"
+                    value={predictionTemperature}
+                    onChange={(e) => setPredictionTemperature(e.target.value)}
+                    style={{ margin: "5px", padding: "10px", width: "150px" }}
+                />
+                <input
+                    type="number"
+                    name="predictionHumidity"
+                    placeholder="Humidity for prediction"
+                    value={predictionHumidity}
+                    onChange={(e) => setPredictionHumidity(e.target.value)}
+                    style={{ margin: "5px", padding: "10px", width: "150px" }}
+                />
+                <input
+                    type="text"
+                    name="predictionFoodType"
+                    placeholder="Food type for prediction"
+                    value={predictionFoodType}
+                    onChange={(e) => setPredictionFoodType(e.target.value)}
+                    style={{ margin: "5px", padding: "10px", width: "150px" }}
+                />
+                <button
+                    onClick={getPrediction}
+                    disabled={predictionLoading}
+                    style={{ padding: "10px", margin: "10px", cursor: "pointer" }}
+                >
+                    {predictionLoading ? "Predicting..." : "Get Prediction"}
+                </button>
+                {predictionError && <p style={{ color: "red" }}>Error: {predictionError}</p>}
+                {predictionResult && <p>Prediction Result: {predictionResult}</p>}
+            </div>
         </div>
     );
 };
